@@ -11,6 +11,10 @@ This technique will
 - not rely upon artificial intelligence
 - be targeted to run in real time
 
+# I've seen other, more competitive techniques!
+
+You probably have. I cannot upload more detailed demos as I do not want to cost my employer any competitive edge. In this repo I must focus on very general, basic techniques.
+
 # Source data
 
 Source of RGBD dataset is https://cs.nyu.edu/~silberman/datasets/nyu_depth_v2.html
