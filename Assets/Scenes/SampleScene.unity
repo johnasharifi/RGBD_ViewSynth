@@ -500,3 +500,4 @@ MonoBehaviour:
   sourceAlbedo: {fileID: 2800000, guid: 3c36fc81af434aa4abc4da36f606fc44, type: 3}
   targetRenderer: {fileID: 791980304}
   mTargetMaterial: {fileID: 0}
+  maxPixelBaseline: 10

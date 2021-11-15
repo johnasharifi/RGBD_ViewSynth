@@ -15,7 +15,7 @@ public class CopyWithHorizontalPixelTranslation : MonoBehaviour
 	// a Material instance which is created in order to draw info
 	[SerializeField] private Material mTargetMaterial;
 
-	[SerializeField] float maxPixelBaseline = 50f;
+	[SerializeField] float maxPixelBaseline = 10f;
 
     // Start is called before the first frame update
     void Start()
@@ -48,8 +48,14 @@ public class CopyWithHorizontalPixelTranslation : MonoBehaviour
 
 		// create a depth map with default values initialized by C# to 0. assume that 0 = furthest possible depth / red in image. Overwrite with any proximal pixels
 		float[,] depthSurface = new float[maxAlbedoX, maxAlbedoY];
-		
-		if (destination == null)
+
+		for (int i = 0; i < maxAlbedoX; ++i) {
+			for (int j = 0; j < maxAlbedoY; ++j) {
+				depthSurface[i, j] = float.NegativeInfinity;
+			}
+		}
+
+				if (destination == null)
 		destination = new Texture2D(maxAlbedoX, source.height, source.format, false, false) 
 		{
 			filterMode = FilterMode.Point,
@@ -60,7 +66,14 @@ public class CopyWithHorizontalPixelTranslation : MonoBehaviour
 		// in our case the sign is really important. other things less important. so just do this linear sum
 		System.Func<Color, float> rgbdToDepth = (c) => 
 		{
-			return c.r * -0.33f + c.g * (0.33f / 2) + c.b * 0.33f;
+			// ensure normalizedDepth is in span [-1 to +1]
+			float normalizedDepth = 0f;
+
+			if (c.r > 0.0f) normalizedDepth = 0.00f + 0.33f * c.r;
+			if (c.g > 0.0f) normalizedDepth = 0.33f + 0.33f * c.g;
+			if (c.b > 0.0f) normalizedDepth = 0.66f + 0.33f * c.b;
+
+			return (normalizedDepth - 0.5f) * 2;
 		};
 
 		// for demo purposes, we will clear the image
