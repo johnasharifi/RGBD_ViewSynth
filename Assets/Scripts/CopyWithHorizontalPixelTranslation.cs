@@ -58,12 +58,12 @@ public class CopyWithHorizontalPixelTranslation : MonoBehaviour
 			}
 		}
 
-				if (destination == null)
-		destination = new Texture2D(maxAlbedoX, source.height, source.format, false, false) 
-		{
-			filterMode = FilterMode.Point,
-			name = "right albedo tex"
-		};
+		if (destination == null) {
+			destination = new Texture2D(maxAlbedoX, source.height, source.format, false, false) {
+				filterMode = FilterMode.Point,
+				name = "synthesized albedo tex"
+			};
+		}
 
 		// the format that the demo image uses is non-overlapping R/G/B. R = background (-k2 to -k), green = (-k to +k), b = foreground (k to +k2)
 		// in our case the sign is really important. other things less important. so just do this linear sum
