@@ -39,6 +39,8 @@ public class CopyWithHorizontalPixelTranslation : MonoBehaviour
 		}
 	}
 
+	const float minNegativeValue = -2.0f;
+
 	/// <summary>
 	/// Copies data from sourceAlbedo to targetAlbedo while applying a horizontal pixel translation according to depth information. This is a very basic view synthesis operation
 	/// </summary>
@@ -49,20 +51,20 @@ public class CopyWithHorizontalPixelTranslation : MonoBehaviour
 		int maxAlbedoX = source.width / 2;
 		int maxAlbedoY = source.height;
 
-		// create a depth map with default values initialized by C# to 0. assume that 0 = furthest possible depth / red in image. Overwrite with any proximal pixels
-		float[,] depthSurface = new float[maxAlbedoX, maxAlbedoY];
-
-		for (int i = 0; i < maxAlbedoX; ++i) {
-			for (int j = 0; j < maxAlbedoY; ++j) {
-				depthSurface[i, j] = float.NegativeInfinity;
-			}
-		}
+		// create a depth map with default value of -2.0f. We will do depth tests and keep pixels with depth values greater than -2.0f
+		float[,] depthSurface = ArrayUtil.ArrayOfValue(minNegativeValue, maxAlbedoX, maxAlbedoY);
 
 		if (destination == null) {
 			destination = new Texture2D(maxAlbedoX, source.height, source.format, false, false) {
 				filterMode = FilterMode.Point,
 				name = "synthesized albedo tex"
 			};
+		}
+
+		for (int i = 0; i < maxAlbedoX; ++i) {
+			for (int j = 0; j < maxAlbedoY; ++j) {
+				destination.SetPixel(i, j, Color.gray);
+			}
 		}
 
 		// the format that the demo image uses is non-overlapping R/G/B. R = background (-k2 to -k), green = (-k to +k), b = foreground (k to +k2)
@@ -76,13 +78,6 @@ public class CopyWithHorizontalPixelTranslation : MonoBehaviour
 			return (normalizedDepth - 0.5f) * 2;
 		};
 		
-		// for demo purposes, we will clear the image
-		for (int i = 0; i < maxAlbedoX; ++i) {
-			for (int j = 0; j < maxAlbedoY; ++j) {
-				destination.SetPixel(i, j, Color.grey);
-			}
-		}
-
 		for (int i = 0; i < maxAlbedoX; ++i) {
 			for (int j = 0; j < maxAlbedoY; ++j) {
 				// retrieve color in color section of original image
