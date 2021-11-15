@@ -17,6 +17,9 @@ public class CopyWithHorizontalPixelTranslation : MonoBehaviour
 
 	[SerializeField] float maxPixelBaseline = 10f;
 
+	// weight vector to dot our color with. This scales different channels and ultimately gives an unsigned depth value which we wish to use
+	[SerializeField] private Vector3 colorWeightToDepth01;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -66,16 +69,13 @@ public class CopyWithHorizontalPixelTranslation : MonoBehaviour
 		// in our case the sign is really important. other things less important. so just do this linear sum
 		System.Func<Color, float> rgbdToDepth = (c) => 
 		{
-			// ensure normalizedDepth is in span [-1 to +1]
-			float normalizedDepth = 0f;
+			// ensure normalizedDepth is in span [0... 1]
+			float normalizedDepth = Vector3.Dot(colorWeightToDepth01, new Vector3(c.r, c.g, c.b));
 
-			if (c.r > 0.0f) normalizedDepth = 0.00f + 0.33f * c.r;
-			if (c.g > 0.0f) normalizedDepth = 0.33f + 0.33f * c.g;
-			if (c.b > 0.0f) normalizedDepth = 0.66f + 0.33f * c.b;
-
+			// then shift to the [-1 to +1] interval
 			return (normalizedDepth - 0.5f) * 2;
 		};
-
+		
 		// for demo purposes, we will clear the image
 		for (int i = 0; i < maxAlbedoX; ++i) {
 			for (int j = 0; j < maxAlbedoY; ++j) {
@@ -85,14 +85,13 @@ public class CopyWithHorizontalPixelTranslation : MonoBehaviour
 
 		for (int i = 0; i < maxAlbedoX; ++i) {
 			for (int j = 0; j < maxAlbedoY; ++j) {
-				// retrieve color in depth section of original image
-				Color depthPixel = source.GetPixel(maxAlbedoX + i, j);
+				// retrieve color in color section of original image
 				Color albedoPixel = source.GetPixel(i, j);
-				// convert color to a depth value
-				float depthAtPixelXY = rgbdToDepth(depthPixel);
+				// retrieve depth in depth section of original image. convert to a float in span [-1, +1]
+				float depthAtPixelXY = rgbdToDepth(source.GetPixel(maxAlbedoX + i, j));
 
 				float baselineXY = Mathf.Cos(Time.timeSinceLevelLoad) * maxPixelBaseline;
-				int parallaxXTranslationX = Mathf.RoundToInt(Mathf.Clamp(i + depthAtPixelXY * baselineXY, 0, maxAlbedoX -  1));
+				int parallaxXTranslationX = Mathf.RoundToInt(Mathf.Clamp(i - depthAtPixelXY * baselineXY, 0, maxAlbedoX -  1));
 
 				// if at position p we can overwrite pixel, do so
 				if (depthSurface[parallaxXTranslationX, j] < depthAtPixelXY) 
@@ -100,7 +99,6 @@ public class CopyWithHorizontalPixelTranslation : MonoBehaviour
 					destination.SetPixel(parallaxXTranslationX, j, albedoPixel);
 					depthSurface[parallaxXTranslationX, j] = depthAtPixelXY;
 				}
-				
 			}
 		}
 		

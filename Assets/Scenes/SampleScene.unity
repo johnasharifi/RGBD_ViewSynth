@@ -501,3 +501,4 @@ MonoBehaviour:
   targetRenderer: {fileID: 791980304}
   mTargetMaterial: {fileID: 0}
   maxPixelBaseline: 10
+  colorWeightToDepth01: {x: 0.1, y: 0.4, z: 0.8}
